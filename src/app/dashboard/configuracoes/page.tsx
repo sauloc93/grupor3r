@@ -1,53 +1,151 @@
 'use client';
-import { Header } from '@/components/layout/Header';
+
+import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { User, Bell, Shield, Building2, Link, Palette } from 'lucide-react';
+import { User, Bell, Shield, Building2, Link, Save } from 'lucide-react';
+
+const TABS = [
+  { id: 'perfil', label: 'Perfil', icon: User },
+  { id: 'notificacoes', label: 'Notificações', icon: Bell },
+  { id: 'seguranca', label: 'Segurança', icon: Shield },
+  { id: 'empresa', label: 'Empresa', icon: Building2 },
+  { id: 'integracoes', label: 'Integrações', icon: Link },
+];
+
+function InputGroup({ label, defaultValue, type = 'text' }: { label: string; defaultValue: string; type?: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--fg2)' }}>{label}</label>
+      <input type={type} defaultValue={defaultValue} style={{ padding: '9px 12px', fontSize: '13px', background: 'var(--surface-2)', border: '1px solid var(--bd)', borderRadius: '8px', color: 'var(--fg)' }} />
+    </div>
+  );
+}
+
+function Toggle({ label, desc, defaultOn = false }: { label: string; desc?: string; defaultOn?: boolean }) {
+  const [on, setOn] = useState(defaultOn);
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid var(--bd2)' }}>
+      <div>
+        <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--fg)' }}>{label}</p>
+        {desc && <p style={{ fontSize: '12px', color: 'var(--fg3)', marginTop: '2px' }}>{desc}</p>}
+      </div>
+      <button onClick={() => setOn(!on)} style={{ width: '36px', height: '20px', borderRadius: '999px', border: 'none', cursor: 'pointer', background: on ? '#003B7A' : 'var(--bd)', position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
+        <span style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '999px', background: '#fff', transition: 'left .2s', display: 'block' }} />
+      </button>
+    </div>
+  );
+}
 
 export default function ConfiguracoesPage() {
+  const [activeTab, setActiveTab] = useState('perfil');
+
   return (
-    <div className="animate-fade-in">
-      <Header title="Configurações" subtitle="Gerencie sua conta e preferências" />
-      <div className="p-8 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="h-fit">
-            <nav className="space-y-1">
-              {[{ icon: User, label: 'Perfil', active: true }, { icon: Bell, label: 'Notificações' }, { icon: Shield, label: 'Segurança' }, { icon: Building2, label: 'Empresa' }, { icon: Link, label: 'Integrações' }, { icon: Palette, label: 'Aparência' }].map(({ icon: Icon, label, active }) => (
-                <button key={label} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white' : 'text-gray-600 hover:bg-gray-50'}`} style={active ? { background: '#003B7A' } : {}}>
-                  <Icon size={16} />{label}
-                </button>
-              ))}
-            </nav>
-          </Card>
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <h3 className="font-bold text-gray-900 mb-6">Informações do Perfil</h3>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-black" style={{ background: '#003B7A' }}>CM</div>
-                <div><p className="font-bold text-gray-900">Carlos Mendes</p><p className="text-sm text-gray-500">Consultor Senior</p><button className="text-xs text-blue-700 mt-1 hover:underline">Alterar foto</button></div>
+    <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '20px', alignItems: 'start' }}>
+      <Card padding="sm">
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setActiveTab(id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 10px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 500, background: activeTab === id ? 'rgba(0,59,122,.08)' : 'transparent', color: activeTab === id ? '#003B7A' : 'var(--fg2)', transition: 'all .15s', textAlign: 'left' }}
+              onMouseEnter={e => { if (activeTab !== id) (e.currentTarget as HTMLElement).style.background = 'var(--surface-2)'; }}
+              onMouseLeave={e => { if (activeTab !== id) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+            >
+              <Icon size={15} /> {label}
+            </button>
+          ))}
+        </nav>
+      </Card>
+
+      <Card>
+        {activeTab === 'perfil' && (
+          <div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '16px', color: 'var(--fg)', marginBottom: '20px' }}>Informações do Perfil</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '999px', background: '#003B7A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ color: '#fff', fontSize: '20px', fontWeight: 700 }}>CM</span>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                {[{ label: 'Nome Completo', value: 'Carlos Mendes' }, { label: 'E-mail', value: 'carlos@grupor3r.com.br' }, { label: 'Telefone', value: '(11) 99999-9999' }, { label: 'Cargo', value: 'Consultor Senior' }].map(({ label, value }) => (
-                  <div key={label}><label className="text-xs font-medium text-gray-500 block mb-1.5">{label}</label><input defaultValue={value} className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-100" /></div>
-                ))}
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--fg)' }}>Carlos Mendes</p>
+                <p style={{ fontSize: '13px', color: 'var(--fg3)' }}>Consultor Sênior</p>
               </div>
-              <div className="mt-4 flex gap-3"><Button variant="primary">Salvar Alterações</Button><Button variant="secondary">Cancelar</Button></div>
-            </Card>
-            <Card>
-              <h3 className="font-bold text-gray-900 mb-6">Integrações de API</h3>
-              <p className="text-sm text-gray-600 mb-4">Conecte com as principais administradoras de consórcio:</p>
-              <div className="space-y-3">
-                {[{ name: 'Embracon API', status: 'Conectado', color: '#16A34A' }, { name: 'Ademicon API', status: 'Conectado', color: '#16A34A' }, { name: 'Porto Seguro API', status: 'Não configurado', color: '#9CA3AF' }, { name: 'Rodobens API', status: 'Não configurado', color: '#9CA3AF' }].map(item => (
-                  <div key={item.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center gap-3"><div className="w-2 h-2 rounded-full" style={{ background: item.color }} /><span className="text-sm font-medium text-gray-800">{item.name}</span></div>
-                    <div className="flex items-center gap-3"><span className="text-xs" style={{ color: item.color }}>{item.status}</span><Button variant="secondary" size="sm">{item.status === 'Conectado' ? 'Configurar' : 'Conectar'}</Button></div>
-                  </div>
-                ))}
-              </div>
-            </Card>
+              <Button variant="secondary" size="sm" style={{ marginLeft: 'auto' }}>Alterar foto</Button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <InputGroup label="Nome" defaultValue="Carlos Mendes" />
+              <InputGroup label="E-mail" defaultValue="carlos@grupor3r.com.br" type="email" />
+              <InputGroup label="Telefone" defaultValue="(11) 99999-0000" />
+              <InputGroup label="Cargo" defaultValue="Consultor Sênior" />
+            </div>
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--bd)' }}>
+              <Button variant="primary" icon={<Save size={14} />}>Salvar Alterações</Button>
+            </div>
           </div>
-        </div>
-      </div>
+        )}
+
+        {activeTab === 'notificacoes' && (
+          <div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '16px', color: 'var(--fg)', marginBottom: '20px' }}>Preferências de Notificação</h3>
+            <Toggle label="Nova proposta criada" desc="Quando uma nova proposta for registrada" defaultOn />
+            <Toggle label="Proposta aprovada" desc="Quando uma proposta for aprovada" defaultOn />
+            <Toggle label="Contrato assinado" desc="Quando um contrato for assinado digitalmente" defaultOn />
+            <Toggle label="Novo cliente cadastrado" desc="Quando um lead for inserido no sistema" />
+            <Toggle label="Relatório semanal" desc="Resumo de atividades enviado toda segunda-feira" defaultOn />
+            <div style={{ marginTop: '20px' }}><Button variant="primary" icon={<Save size={14} />}>Salvar</Button></div>
+          </div>
+        )}
+
+        {activeTab === 'seguranca' && (
+          <div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '16px', color: 'var(--fg)', marginBottom: '20px' }}>Segurança da Conta</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '380px' }}>
+              <InputGroup label="Senha Atual" defaultValue="" type="password" />
+              <InputGroup label="Nova Senha" defaultValue="" type="password" />
+              <InputGroup label="Confirmar Nova Senha" defaultValue="" type="password" />
+              <Button variant="primary" icon={<Save size={14} />}>Alterar Senha</Button>
+            </div>
+            <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--bd)' }}>
+              <Toggle label="Autenticação em dois fatores" desc="Adiciona uma camada extra de segurança" />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'empresa' && (
+          <div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '16px', color: 'var(--fg)', marginBottom: '20px' }}>Dados da Empresa</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <InputGroup label="Razão Social" defaultValue="Grupo R3R Crédito Ltda" />
+              <InputGroup label="CNPJ" defaultValue="12.345.678/0001-99" />
+              <InputGroup label="Endereço" defaultValue="Av. Paulista, 1000" />
+              <InputGroup label="Cidade / Estado" defaultValue="São Paulo / SP" />
+            </div>
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--bd)' }}>
+              <Button variant="primary" icon={<Save size={14} />}>Salvar</Button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'integracoes' && (
+          <div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '16px', color: 'var(--fg)', marginBottom: '20px' }}>Integrações</h3>
+            {[
+              { name: 'WhatsApp Business', desc: 'Envio de mensagens automáticas', connected: true },
+              { name: 'DocuSign', desc: 'Assinatura digital de contratos', connected: true },
+              { name: 'Serasa', desc: 'Consulta de crédito e score', connected: false },
+              { name: 'Receita Federal', desc: 'Validação de CPF/CNPJ', connected: false },
+              { name: 'HubSpot CRM', desc: 'Sincronização de leads', connected: false },
+            ].map(int => (
+              <div key={int.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid var(--bd2)' }}>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--fg)' }}>{int.name}</p>
+                  <p style={{ fontSize: '12px', color: 'var(--fg3)', marginTop: '2px' }}>{int.desc}</p>
+                </div>
+                <Button variant={int.connected ? 'secondary' : 'primary'} size="sm">
+                  {int.connected ? 'Desconectar' : 'Conectar'}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
