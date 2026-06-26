@@ -10,32 +10,59 @@ interface CardProps {
   padding?: 'sm' | 'md' | 'lg' | 'none';
 }
 
-const paddings = { none: '', sm: 'p-4', md: 'p-6', lg: 'p-8' };
+const paddings: Record<string, string> = {
+  none: '0',
+  sm: '14px 16px',
+  md: '18px 22px',
+  lg: '24px 28px',
+};
 
 export function Card({ children, className = '', style, hover = false, padding = 'md' }: CardProps) {
   return (
-    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm ${paddings[padding]} ${hover ? 'card-hover cursor-pointer' : ''} ${className}`} style={style}>
+    <div
+      className={`${hover ? 'card-hover' : ''} ${className}`}
+      style={{
+        background: '#fff',
+        border: '1px solid var(--bd)',
+        borderRadius: '14px',
+        padding: paddings[padding],
+        ...style,
+      }}
+    >
       {children}
     </div>
   );
 }
 
-export function MetricCard({ title, value, subtitle, icon, trend, trendValue, color = '#003B7A' }: {
-  title: string; value: string; subtitle?: string; icon: ReactNode;
-  trend?: 'up' | 'down' | 'neutral'; trendValue?: string; color?: string;
+export function MetricCard({
+  title, value, subtitle, icon, trend, trendValue, color = '#003B7A',
+}: {
+  title: string;
+  value: string;
+  subtitle?: string;
+  icon: ReactNode;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  color?: string;
 }) {
-  const trendColor = trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-500';
-  const trendIcon = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
+  const trendColor = trend === 'up' ? 'var(--ok-fg)' : trend === 'down' ? 'var(--er-fg)' : 'var(--fg3)';
+  const trendBg = trend === 'up' ? 'var(--ok-bg)' : trend === 'down' ? 'var(--er-bg)' : 'var(--bg)';
+  const trendArrow = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
+
   return (
-    <Card className="card-hover">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
-          {trendValue && <p className={`text-xs font-medium mt-2 ${trendColor}`}>{trendIcon} {trendValue} vs mês anterior</p>}
+    <Card hover>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--fg3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</p>
+          <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--fg)', fontFamily: "'DM Mono', monospace", lineHeight: 1, marginBottom: '6px' }}>{value}</p>
+          {subtitle && <p style={{ fontSize: '12px', color: 'var(--fg3)' }}>{subtitle}</p>}
+          {trendValue && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '8px', fontSize: '11.5px', fontWeight: 600, color: trendColor, background: trendBg, padding: '2px 8px', borderRadius: '999px' }}>
+              {trendArrow} {trendValue}
+            </span>
+          )}
         </div>
-        <div className="rounded-xl p-3 ml-4" style={{ backgroundColor: `${color}15` }}>
+        <div style={{ borderRadius: '10px', padding: '10px', background: `${color}14`, border: `1px solid ${color}22`, flexShrink: 0 }}>
           <div style={{ color }}>{icon}</div>
         </div>
       </div>

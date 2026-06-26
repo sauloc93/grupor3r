@@ -2,22 +2,29 @@
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'gold';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'gold' | 'purple';
   size?: 'sm' | 'md';
 }
 
-const variantStyles: Record<string, string> = {
-  default: 'bg-blue-100 text-blue-800',
-  success: 'bg-green-100 text-green-800',
-  warning: 'bg-amber-100 text-amber-800',
-  danger: 'bg-red-100 text-red-800',
-  info: 'bg-cyan-100 text-cyan-800',
-  gold: 'bg-amber-50 text-amber-700 border border-amber-200',
+const variantStyles: Record<string, React.CSSProperties> = {
+  default:  { background: '#F1F5F9', color: '#64748B', border: '1px solid #E2E8F0' },
+  success:  { background: 'var(--ok-bg)', color: 'var(--ok-fg)', border: '1px solid var(--ok-bd)' },
+  warning:  { background: 'var(--wn-bg)', color: 'var(--wn-fg)', border: '1px solid var(--wn-bd)' },
+  danger:   { background: 'var(--er-bg)', color: 'var(--er-fg)', border: '1px solid var(--er-bd)' },
+  info:     { background: 'var(--in-bg)', color: 'var(--in-fg)', border: '1px solid var(--in-bd)' },
+  gold:     { background: 'var(--gold-bg)', color: 'var(--gold-dk)', border: '1px solid rgba(200,150,44,.25)' },
+  purple:   { background: 'var(--pu-bg)', color: 'var(--pu-fg)', border: '1px solid var(--pu-bd)' },
 };
 
 export function Badge({ children, variant = 'default', size = 'sm' }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center font-medium rounded-full ${size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'} ${variantStyles[variant]}`}>
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', fontWeight: 500,
+      borderRadius: '999px', whiteSpace: 'nowrap',
+      fontSize: size === 'sm' ? '11px' : '12px',
+      padding: size === 'sm' ? '2px 8px' : '3px 10px',
+      ...variantStyles[variant],
+    }}>
       {children}
     </span>
   );
