@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --r3r-blue: #003B7A;
+  --r3r-blue-light: #0055B3;
+  --r3r-blue-hover: #004A9E;
+  --r3r-gold: #C8962C;
+  --r3r-gold-light: #E8B84B;
+  --r3r-white: #FFFFFF;
+  --r3r-gray: #F5F7FA;
+  --r3r-gray-mid: #E8ECF0;
+  --r3r-text: #1A2B3C;
+  --r3r-text-light: #5A6A7A;
+  --r3r-success: #16A34A;
+  --r3r-warning: #D97706;
+  --r3r-danger: #DC2626;
+  --background: #F5F7FA;
+  --foreground: #1A2B3C;
+}
+
+* { box-sizing: border-box; padding: 0; margin: 0; }
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--r3r-gray); }
+::-webkit-scrollbar-thumb { background: #0055B3; border-radius: 3px; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 150, 44, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(200, 150, 44, 0); }
+}
+
+.animate-fade-in { animation: fadeIn 0.4s ease-out; }
+.animate-slide-in { animation: slideIn 0.3s ease-out; }
+.pulse-gold { animation: pulse-gold 2s infinite; }
+
+.card-hover { transition: all 0.2s ease; }
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 59, 122, 0.12);
+}
+
+.gradient-blue { background: linear-gradient(135deg, #003B7A 0%, #0055B3 100%); }
+.gradient-gold { background: linear-gradient(135deg, #C8962C 0%, #E8B84B 100%); }
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #003B7A, #0055B3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.kanban-column { min-height: 500px; transition: background 0.2s; }
+.kanban-column.drag-over {
+  background: rgba(0, 85, 179, 0.05);
+  border: 2px dashed #0055B3;
+}
