@@ -1,141 +1,154 @@
 'use client';
 import { useState } from 'react';
-import { Header } from '@/components/layout/Header';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Calculator, Home, Briefcase, Building2, TrendingUp, CheckCircle2, Info, Download, Share2, ChevronRight } from 'lucide-react';
-import { ADMINISTRATORS, formatCurrency } from '@/lib/data';
-import { ProductType, SimulationResult } from '@/types';
 
-const PRODUCTS = [
-  { key: 'contemplado', label: 'Consórcio Contemplado', icon: CheckCircle2, desc: 'Carta já contemplada, uso imediato', color: '#003B7A' },
-  { key: 'programado', label: 'Carta Programada', icon: TrendingUp, desc: 'Aquisição com prazo planejado', color: '#C8962C' },
-  { key: 'disponivel', label: 'Carta Disponível', icon: Home, desc: 'Para imóveis, veículos e serviços', color: '#16A34A' },
-  { key: 'home-equity', label: 'Home Equity', icon: Building2, desc: 'Crédito com garantia de imóvel', color: '#7C3AED' },
-  { key: 'capital-giro', label: 'Capital de Giro', icon: Briefcase, desc: 'Para empresas e negócios', color: '#0891B2' },
+const tabs = ['Carta Contemplada', 'Consórcio Estruturado', 'Home Equity', 'Capital de Giro', 'Financiamento'];
+const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v);
+
+const simResults = [
+  { admin: 'Itaú Consórcio', taxa: '1.48%', parcela: 2890, total: 520200, economia: '+R$ 340k' },
+  { admin: 'Porto Seguro', taxa: '1.52%', parcela: 2970, total: 534600, economia: '+R$ 326k' },
+  { admin: 'Caixa', taxa: '1.45%', parcela: 2850, total: 513000, economia: '+R$ 347k' },
+  { admin: 'BB Consórcio', taxa: '1.55%', parcela: 3020, total: 543600, economia: '+R$ 316k' },
+  { admin: 'Bradesco', taxa: '1.50%', parcela: 2940, total: 529200, economia: '+R$ 331k' },
+  { admin: 'Santander', taxa: '1.58%', parcela: 3070, total: 552600, economia: '+R$ 308k' },
+  { admin: 'Mapfre', taxa: '1.44%', parcela: 2830, total: 509400, economia: '+R$ 350k' },
 ];
 
-function calcSimulation(product: ProductType, creditValue: number, installments: number, administrator: string): SimulationResult {
-  const feeRates: Record<string, number> = { 'contemplado': 0.015, 'programado': 0.018, 'disponivel': 0.016, 'home-equity': 0.012, 'capital-giro': 0.020 };
-  const adminFee = feeRates[product] || 0.016;
-  const reserveFundRate = 0.02;
-  const insuranceRate = product === 'home-equity' ? 0.004 : 0.002;
-  const monthlyAdmin = (creditValue * adminFee) / installments;
-  const monthlyReserve = (creditValue * reserveFundRate) / installments;
-  const monthlyInsurance = (creditValue * insuranceRate) / 12;
-  const monthlyInstallment = monthlyAdmin + monthlyReserve + monthlyInsurance;
-  return { product, creditValue, installments, monthlyInstallment, totalAmount: monthlyInstallment * installments, administrationFee: creditValue * adminFee, reserveFund: creditValue * reserveFundRate, insurance: monthlyInsurance * 12, administrator };
-}
-
 export default function SimulacaoPage() {
-  const [selectedProduct, setSelectedProduct] = useState<ProductType>('contemplado');
-  const [creditValue, setCreditValue] = useState(300000);
-  const [installments, setInstallments] = useState(180);
-  const [administrator, setAdministrator] = useState(ADMINISTRATORS[0]);
-  const [result, setResult] = useState<SimulationResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const selectedProductInfo = PRODUCTS.find(p => p.key === selectedProduct)!;
-  const handleSimulate = () => { setLoading(true); setTimeout(() => { setResult(calcSimulation(selectedProduct, creditValue, installments, administrator)); setLoading(false); }, 800); };
-  const installmentOptions: Record<ProductType, number[]> = { 'contemplado': [60, 80, 100, 120, 150, 180, 200], 'programado': [60, 80, 100, 120, 150, 180], 'disponivel': [36, 48, 60, 72, 84], 'home-equity': [60, 84, 120, 180, 240], 'capital-giro': [12, 24, 36, 48, 60] };
+  const [activeTab, setActiveTab] = useState(0);
+  const [val, setVal] = useState(300000);
+  const [lance, setLance] = useState(30);
+  const [prazo, setPrazo] = useState(120);
+  const [imov, setImov] = useState(800000);
+  const [pct, setPct] = useState(40);
+  const [praz2, setPraz2] = useState(120);
+
+  const credLiq = val * (1 - lance / 100);
+  const parcela = (val * 1.18) / prazo;
+  const heVal = imov * (pct / 100);
+  const heParcela = (heVal * (1 + 0.0099 * praz2)) / praz2;
+
   return (
-    <div className="animate-fade-in">
-      <Header title="Simulador de Crédito" subtitle="Simule os melhores produtos para seu cliente" />
-      <div className="p-8 space-y-8">
-        <div>
-          <h2 className="text-base font-semibold text-gray-800 mb-4">Selecione o Produto</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {PRODUCTS.map(({ key, label, icon: Icon, desc, color }) => (
-              <button key={key} onClick={() => { setSelectedProduct(key as ProductType); setResult(null); }} className={`p-4 rounded-2xl border-2 text-left transition-all duration-200 ${selectedProduct === key ? 'border-current shadow-md' : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'}`} style={selectedProduct === key ? { borderColor: color, background: `${color}08` } : {}}>
-                <div className="rounded-xl p-2.5 w-fit mb-3" style={{ background: `${color}15` }}><Icon size={20} style={{ color }} /></div>
-                <p className="text-sm font-semibold text-gray-900 leading-tight">{label}</p>
-                <p className="text-xs text-gray-500 mt-1">{desc}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <h3 className="font-semibold text-gray-900 mb-6 flex items-center gap-2"><Calculator size={18} style={{ color: selectedProductInfo.color }} />Parâmetros da Simulação</h3>
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Valor da Carta de Crédito</label>
-                  <div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">R$</span><input type="number" value={creditValue} onChange={e => setCreditValue(Number(e.target.value))} min={10000} max={5000000} step={10000} className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 font-medium" /></div>
-                  <input type="range" min={10000} max={2000000} step={10000} value={creditValue} onChange={e => setCreditValue(Number(e.target.value))} className="w-full mt-3 accent-blue-700" />
-                  <div className="flex justify-between text-xs text-gray-400 mt-1"><span>R$ 10 mil</span><span className="font-medium text-blue-700">{formatCurrency(creditValue)}</span><span>R$ 2 milhões</span></div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Número de Parcelas</label>
-                  <div className="flex flex-wrap gap-2">
-                    {installmentOptions[selectedProduct].map(n => (<button key={n} onClick={() => setInstallments(n)} className={`px-3 py-2 text-sm rounded-xl font-medium transition-all ${installments === n ? 'text-white shadow-sm' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`} style={installments === n ? { background: selectedProductInfo.color } : {}}>{n}x</button>))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Administradora</label>
-                  <select value={administrator} onChange={e => setAdministrator(e.target.value)} className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-100">{ADMINISTRATORS.map(a => <option key={a}>{a}</option>)}</select>
-                </div>
-                <Button onClick={handleSimulate} loading={loading} variant="primary" size="lg" className="w-full" style={{ background: selectedProductInfo.color }}>Simular Agora</Button>
-              </div>
-            </Card>
-            <Card className="border-l-4" style={{ borderLeftColor: selectedProductInfo.color }}>
-              <div className="flex items-start gap-3">
-                <Info size={18} style={{ color: selectedProductInfo.color }} className="mt-0.5 shrink-0" />
-                <div><h4 className="font-semibold text-gray-900 text-sm">{selectedProductInfo.label}</h4><p className="text-xs text-gray-600 mt-1 leading-relaxed">{selectedProduct === 'contemplado' && 'Carta já sorteada ou lanceada. O cliente pode usar o crédito imediatamente.'}{selectedProduct === 'programado' && 'Planejamento de médio a longo prazo. Cliente adquire a carta e aguarda a contemplação.'}{selectedProduct === 'disponivel' && 'Cartas disponíveis no mercado secundário com desconto.'}{selectedProduct === 'home-equity' && 'Crédito com garantia do imóvel. Taxas menores e prazos mais longos.'}{selectedProduct === 'capital-giro' && 'Solução para empresas que precisam de capital de giro.'}</p></div>
-              </div>
-            </Card>
-          </div>
-          <div className="lg:col-span-3">
-            {result ? (
-              <div className="space-y-6 animate-fade-in">
-                <Card className="text-center relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-1" style={{ background: selectedProductInfo.color }} />
-                  <div className="pt-4">
-                    <p className="text-sm text-gray-500 mb-1">Parcela Mensal Estimada</p>
-                    <p className="text-5xl font-bold" style={{ color: selectedProductInfo.color }}>{formatCurrency(result.monthlyInstallment)}</p>
-                    <p className="text-sm text-gray-400 mt-2">por mês · {result.installments} parcelas</p>
-                    <div className="flex items-center justify-center gap-2 mt-3"><Badge variant="info">{result.administrator}</Badge></div>
-                  </div>
-                </Card>
-                <Card>
-                  <h4 className="font-semibold text-gray-900 mb-4">Composição da Parcela</h4>
-                  <div className="space-y-3">
-                    {[{ label: 'Carta de Crédito (valor contratado)', value: result.creditValue, highlight: true }, { label: 'Taxa de Administração Total', value: result.administrationFee, highlight: false }, { label: 'Fundo de Reserva', value: result.reserveFund, highlight: false }, { label: 'Seguro (anual)', value: result.insurance, highlight: false }, { label: 'Custo Total do Plano', value: result.totalAmount, highlight: true }].map(item => (
-                      <div key={item.label} className={`flex items-center justify-between py-3 ${item.highlight ? 'border-t border-gray-100 mt-2' : ''}`}>
-                        <span className={`text-sm ${item.highlight ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>{item.label}</span>
-                        <span className={`text-sm font-bold ${item.highlight ? '' : 'text-gray-800'}`} style={item.highlight ? { color: selectedProductInfo.color } : {}}>{formatCurrency(item.value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-                <Card>
-                  <h4 className="font-semibold text-gray-900 mb-4">Comparativo de Prazos</h4>
-                  <div className="space-y-3">
-                    {installmentOptions[selectedProduct].map(n => {
-                      const sim = calcSimulation(selectedProduct, creditValue, n, administrator);
-                      const isSelected = n === installments;
-                      return (<button key={n} onClick={() => { setInstallments(n); setResult(sim); }} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isSelected ? 'border-2' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'}`} style={isSelected ? { borderColor: selectedProductInfo.color, background: `${selectedProductInfo.color}05` } : {}}><span className="text-sm font-medium text-gray-700">{n} parcelas</span><div className="flex items-center gap-3"><span className={`text-sm font-bold ${isSelected ? '' : 'text-gray-800'}`} style={isSelected ? { color: selectedProductInfo.color } : {}}>{formatCurrency(sim.monthlyInstallment)}/mês</span>{isSelected && <Badge variant="info">Selecionado</Badge>}</div></button>);
-                    })}
-                  </div>
-                </Card>
-                <div className="flex gap-3">
-                  <Button variant="primary" className="flex-1" style={{ background: selectedProductInfo.color }}>Gerar Proposta <ChevronRight size={16} /></Button>
-                  <Button variant="secondary" icon={<Download size={15} />}>PDF</Button>
-                  <Button variant="secondary" icon={<Share2 size={15} />}>Compartilhar</Button>
-                </div>
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center py-20">
-                  <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: `${selectedProductInfo.color}10` }}><Calculator size={40} style={{ color: selectedProductInfo.color }} /></div>
-                  <p className="font-semibold text-gray-700">Configure os parâmetros</p>
-                  <p className="text-sm text-gray-400 mt-1">e clique em Simular Agora</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+    <div style={{ padding: '32px', fontFamily: "'DM Sans', sans-serif", background: '#F5F7FA', minHeight: '100vh' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Simulador de Crédito</h1>
+        <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0' }}>Simule os melhores produtos para seu cliente</p>
       </div>
+
+      <div style={{ display: 'flex', gap: '4px', background: '#fff', borderRadius: '12px', padding: '6px', border: '1px solid #e2e8f0', marginBottom: '24px', width: 'fit-content' }}>
+        {tabs.map((t, i) => (
+          <button key={t} onClick={() => setActiveTab(i)} style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: activeTab === i ? '#003B7A' : 'transparent', color: activeTab === i ? '#fff' : '#64748b', fontSize: '13px', fontWeight: activeTab === i ? 600 : 400, cursor: 'pointer', transition: 'all 0.2s' }}>{t}</button>
+        ))}
+      </div>
+
+      {activeTab === 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '24px' }}>
+          <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '24px' }}>
+            <h3 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Parâmetros</h3>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>Valor da Carta: {fmt(val)}</label>
+              <input type="range" min={50000} max={2000000} step={10000} value={val} onChange={e => setVal(+e.target.value)} style={{ width: '100%', accentColor: '#B8973A' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}><span>R$ 50k</span><span>R$ 2M</span></div>
+            </div>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>Lance: {lance}%</label>
+              <input type="range" min={20} max={60} step={1} value={lance} onChange={e => setLance(+e.target.value)} style={{ width: '100%', accentColor: '#B8973A' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}><span>20%</span><span>60%</span></div>
+            </div>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>Prazo: {prazo} meses</label>
+              <input type="range" min={12} max={180} step={12} value={prazo} onChange={e => setPrazo(+e.target.value)} style={{ width: '100%', accentColor: '#B8973A' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}><span>12m</span><span>180m</span></div>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #B8973A, #C8962C)', borderRadius: '12px', padding: '20px', color: '#fff' }}>
+              <div style={{ fontSize: '11px', opacity: 0.85, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Crédito Líquido</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>{fmt(credLiq)}</div>
+              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '6px' }}>Parcela ~{fmt(parcela)}/mês</div>
+            </div>
+          </div>
+          <div>
+            <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '16px' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700 }}>Comparativo de Administradoras</h3>
+                <div style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>Economia vs. Financiamento</div>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc' }}>
+                    {['Administradora', 'Taxa Admin.', 'Parcela/mês', 'Total do Plano', 'Economia'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {simResults.map((r, i) => (
+                    <tr key={r.admin} style={{ borderTop: '1px solid #f1f5f9', background: i === 0 ? '#fffbf0' : i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                      <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: i === 0 ? 700 : 500, color: '#0F172A' }}>{r.admin}{i === 0 && <span style={{ marginLeft: '6px', fontSize: '10px', background: '#B8973A', color: '#fff', borderRadius: '4px', padding: '2px 6px' }}>Melhor</span>}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '13px', color: '#475569' }}>{r.taxa}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: 600, fontFamily: "'DM Mono', monospace" }}>{fmt(r.parcela)}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '13px', fontFamily: "'DM Mono', monospace" }}>{fmt(r.total)}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '12px', fontWeight: 600, color: '#16a34a' }}>{r.economia}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+              {[{ label: 'Contemplado', sub: 'Melhor opção', badge: 'Recomendado', color: '#16a34a' }, { label: 'Financiamento', sub: '+42% mais caro', badge: 'Comparativo', color: '#dc2626' }, { label: 'Home Equity', sub: 'Alternativa', badge: 'Alternativo', color: '#1d4ed8' }].map(c => (
+                <div key={c.label} style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '16px', borderTop: `3px solid ${c.color}` }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: c.color, marginBottom: '6px' }}>{c.badge}</div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{c.label}</div>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{c.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 2 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '24px' }}>
+          <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '24px' }}>
+            <h3 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700 }}>Home Equity</h3>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>Valor do Imóvel: {fmt(imov)}</label>
+              <input type="range" min={200000} max={5000000} step={50000} value={imov} onChange={e => setImov(+e.target.value)} style={{ width: '100%', accentColor: '#003B7A' }} />
+            </div>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>% do Imóvel: {pct}%</label>
+              <input type="range" min={10} max={60} step={5} value={pct} onChange={e => setPct(+e.target.value)} style={{ width: '100%', accentColor: '#003B7A' }} />
+            </div>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>Prazo: {praz2} meses</label>
+              <input type="range" min={12} max={240} step={12} value={praz2} onChange={e => setPraz2(+e.target.value)} style={{ width: '100%', accentColor: '#003B7A' }} />
+            </div>
+            <div style={{ background: '#003B7A', borderRadius: '12px', padding: '20px', color: '#fff' }}>
+              <div style={{ fontSize: '11px', opacity: 0.8, marginBottom: '6px' }}>Crédito Disponível</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>{fmt(heVal)}</div>
+              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '6px' }}>~{fmt(heParcela)}/mês · {praz2}x</div>
+            </div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '24px' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 700 }}>Resultado da Simulação</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {[{ label: 'Valor do Imóvel', value: fmt(imov) }, { label: 'Crédito ('+pct+'%)', value: fmt(heVal) }, { label: 'Taxa mensal', value: '0,99% a.m.' }, { label: 'Prazo', value: praz2+' meses' }, { label: 'Parcela estimada', value: fmt(heParcela) }, { label: 'Total pago', value: fmt(heParcela * praz2) }].map(item => (
+                <div key={item.label} style={{ background: '#f8fafc', borderRadius: '10px', padding: '16px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>{item.label}</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', fontFamily: "'DM Mono', monospace" }}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(activeTab === 1 || activeTab === 3 || activeTab === 4) && (
+        <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '48px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔧</div>
+          <h3 style={{ margin: '0 0 8px', color: '#0F172A' }}>Em desenvolvimento</h3>
+          <p style={{ color: '#64748b', margin: 0 }}>Esta aba estará disponível em breve.</p>
+        </div>
+      )}
     </div>
   );
 }
