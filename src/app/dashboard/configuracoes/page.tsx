@@ -1,5 +1,4 @@
 'use client';
-import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { User, Bell, Shield, Building2, Link, Palette } from 'lucide-react';
@@ -7,7 +6,6 @@ import { User, Bell, Shield, Building2, Link, Palette } from 'lucide-react';
 export default function ConfiguracoesPage() {
   return (
     <div className="animate-fade-in">
-      <Header title="Configurações" subtitle="Gerencie sua conta e preferências" />
       <div className="p-8 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="h-fit">
