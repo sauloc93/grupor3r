@@ -1,25 +1,20 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { DM_Sans, DM_Mono, Playfair_Display } from 'next/font/google';
+import './globals.css';
+
+const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm-sans' });
+const dmMono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-dm-mono' });
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 
 export const metadata: Metadata = {
-  title: "R3R Crédito | Soluções Financeiras Estratégicas",
-  description: "Plataforma completa de crédito do Grupo R3R. Consórcio contemplado, cartas programadas, capital de giro e home equity.",
+  title: 'R3R | Plataforma de Crédito',
+  description: 'Grupo R3R — Soluções Financeiras Estratégicas',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body style={{ fontFamily: "'DM Sans', sans-serif", background: "var(--bg)", color: "var(--fg)" }}>
-        {children}
-      </body>
+    <html lang="pt-BR" className={`${dmSans.variable} ${dmMono.variable} ${playfair.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
